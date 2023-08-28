@@ -1,30 +1,34 @@
 #!/bin/bash
 
-# Chemin vers le répertoire contenant les fichiers
-repertoire="/chemin/vers/repertoire"
+# Chemmin
+repertoire="./"
 
-# Se déplacer dans le répertoire
+# Bon endroit
 cd "$repertoire" || exit
 
-# Compteur pour le préfixe numérique
+# Compteur pour numérotation
 compteur=1
 
-# Boucle à travers les fichiers triés alphabétiquement (avec prise en charge des espaces)
-find . -maxdepth 1 -type f | sort | while IFS= read -r fichier; do
-    # Obtenir le nom de fichier sans chemin
+# boucle tout les fichiers en tri alphabetique sans les .sh
+find . -maxdepth 1 -type f ! -name "*.sh" | sort -V | while IFS= read -r fichier; do
+    # filename
     nom_fichier=$(basename "$fichier")
     
-    # Obtenir l'extension du fichier
+    # extension
     extension="${nom_fichier##*.}"
     
-    # Générer un nouveau nom de fichier avec préfixe numérique
+    # newname
     nouveau_nom="$(printf "%03d" "$compteur").$extension"
     
-    # Renommer le fichier (en gérant les espaces)
-    mv "$nom_fichier" "$nouveau_nom"
+    ##DEBUG##
+    echo "ancien : $fichier"
+    echo "nouveau : $nouveau_nom"
+    ##!DEBUG##
     
-    # Incrémenter le compteur
+    # Renommer
+    #mv "$nom_fichier" "$nouveau_nom"
+    # Incr compteur
     compteur=$((compteur + 1))
 done
 
-echo "Renommage terminé."
+echo "OK"
