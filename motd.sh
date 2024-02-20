@@ -36,6 +36,9 @@ memcached=$(grep -w Cached /proc/meminfo | awk {'print $2'})
 membuffed=$(grep -w Buffers /proc/meminfo | awk {'print $2'})
 memreclaimable=$(grep -w SReclaimable /proc/meminfo | awk {'print $2'})
 
+swaptot=$(grep -w SwapTotal /proc/meminfo | awk {'print $2'})
+swapfree=$(grep -w SwapFree /proc/meminfo | awk {'print $2'})
+
 ## Traitement / calculs scientifiques tah HEC
 memused=$(( $memtotal - $memfree ))
 memusednocache=$(( $memused - $memcached ))
@@ -45,6 +48,8 @@ ramusedraw=$(($memusednocachenobuffersnoclaim/$unit))
 ramtot=$(($memtotal/$unit))
 ramused=$(($memused/$unit))
 
+swapused=$(( $swaptot - $swapfree ))
+swappercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $swapused/$swaptot ))")
 #ramusedpercent=0$(bc <<<"scale=3; $ramusedraw/$ramtot") # fuck les dépendances
 #ramusedpercent=$(bc <<<"scale=3; $ramusedpercent*100")  # fuck les dépendances
 #ramusedpercent=$(echo ${ramusedpercent:0:-2})  # fuck les dépendances
@@ -80,7 +85,7 @@ echo -e "  Kernel       \e[33m:\e[0m $kernel"
 echo -e "  CPU          \e[33m:\e[0m $cpu_model_number"
 echo -e "  Charge CPU   \e[33m:\e[0m $one (1min) / $five (5min) / $fifteen (15min)"
 echo -e "  Adresse IP   \e[33m:\e[0m $ip | $ipext | $ptr"
-echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%)"
+echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
 echo -e "  Uptime       \e[33m:\e[0m $uptime"
 echo -e "  Disque       \e[33m:\e[0m $diskused/$disktotal ($diskusedpercent%) | Libre : $diskfree ($diskfreepercent%)"
 echo ""
