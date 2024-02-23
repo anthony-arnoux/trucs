@@ -2,9 +2,20 @@
 cat > /etc/update-motd.d/10-uname <<'EOF'
 #!/bin/bash
 
-# y'a internet ou pas
-if $(ping -qn4c1 1.1.1.1 >/dev/null); then
+# y'a internet ou pas + ip + ping
+pingoutput=$(ping -qn4c1 1.1.1.1 2>&1 | tail -n 1)
+latency=$(echo "$pingoutput" | awk -F'/' '{ print $6 }')
+if [[ -n "$latency" ]]; then
+  latency=$(echo "$latency" | cut -d"." -f1)
   internet="1"
+  if which curl &> /dev/null; then
+    ipext=$(curl -4 -sSL 'ifconfig.me')
+  elif which wget &> /dev/null; then
+    ipext=$(wget --inet4-only -qO- 'ifconfig.me')
+  fi
+  ptr=$(host -t PTR ${ipext} | awk {'print $NF'})
+else
+  internet="0"
 fi
 
 # DEBIAN VERSION & CO
@@ -66,16 +77,6 @@ diskfreepercent=$(( 100 - $diskusedpercent ))
 # Récupérer le loadavg
 read one five fifteen rest < /proc/loadavg
 
-# Pour récuperer l'ipv4 externe -> curl ou wget
-if [[ $internet = "1" ]]; then
-  if which curl &> /dev/null; then
-    ipext=$(curl -4 -sSL 'ifconfig.me')
-  elif which wget &> /dev/null; then
-    ipext=$(wget --inet4-only -qO- 'ifconfig.me')
-  fi
-  ptr=$(host -t PTR ${ipext} | awk {'print $NF'})
-fi
-
 # Affichage
 echo ""
 echo -e "  Nom d'hôte   \e[33m:\e[0m $hostname"
@@ -84,7 +85,7 @@ echo -e "  Distribution \e[33m:\e[0m $distrib ($deb_ver)"
 echo -e "  Kernel       \e[33m:\e[0m $kernel"
 echo -e "  CPU          \e[33m:\e[0m $cpu_model_number"
 echo -e "  Charge CPU   \e[33m:\e[0m $one (1min) / $five (5min) / $fifteen (15min)"
-echo -e "  Adresse IP   \e[33m:\e[0m $ip | $ipext | $ptr"
+echo -e "  Adresse IP   \e[33m:\e[0m $ip | $ipext | $ptr | $latency ms"
 echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
 echo -e "  Uptime       \e[33m:\e[0m $uptime"
 echo -e "  Disque       \e[33m:\e[0m $diskused/$disktotal ($diskusedpercent%) | Libre : $diskfree ($diskfreepercent%)"
