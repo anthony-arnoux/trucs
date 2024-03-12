@@ -65,7 +65,9 @@ ramtot=$(($memtotal/$unit))
 ramused=$(($memused/$unit))
 
 swapused=$(( $swaptot - $swapfree ))
-swappercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $swapused/$swaptot ))")
+if [[ ! -z $swaptot ]]; then
+  swappercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $swapused/$swaptot ))")
+fi
 #ramusedpercent=0$(bc <<<"scale=3; $ramusedraw/$ramtot") # fuck les dépendances
 #ramusedpercent=$(bc <<<"scale=3; $ramusedpercent*100")  # fuck les dépendances
 #ramusedpercent=$(echo ${ramusedpercent:0:-2})  # fuck les dépendances
