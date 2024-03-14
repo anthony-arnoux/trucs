@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Dépendances
+if ! eval "which ffmpeg &> /dev/null"; then
+  echo "all my homiz lovz ffmpeg but it is capout je trouve pas"
+  exit 5
+elif ! eval "which curl &> /dev/null"; then
+  echo "all my true homiz lovz le cul but it is capout je trouve pas"
+  exit 5
+fi
+
 if eval "ping -qn4c1 one.one.one.one >/dev/null"; then
   true
 else
