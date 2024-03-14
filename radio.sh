@@ -1,5 +1,5 @@
 #!/bin/bash
-
+TZ="Europe/Paris"
 # Dépendances
 if ! eval "which ffmpeg &> /dev/null"; then
   echo "all my homiz lovz ffmpeg but it is capout je trouve pas"
@@ -41,33 +41,32 @@ else
   exit 3
 fi
 
-out_file="radio_$(date +"%d-%m-%Y-%S").mp3"
+out_file="radio_$(date +"%Y-%d-%m-%S").mp3"
 
 url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
 
 # check si dans le temps
-curr_time=$(date +"%H:%M")
+curr_time=$(date +"%R")
 
+# ffmpeg en arriere plan
 ffmpeg -i "$url" -c copy "$out_file" &
 pid=$!
 
 if [[ "$curr_time" < "$stop_time" ]]; then
-    # ffmpeg en arriere plan
-    #ffmpeg -i "$url" -c copy "$out_file" &
     # recup le pid du process ffmpeg
     #pid=$!
 
     # si le meme jour, toutes les minutes, check si faut tjrs enregistrer
-    while [[ $(date +"%H:%M") < "$stop_time" ]]; do
+    while [[ $(date +"%R") < "$stop_time" ]]; do
         sleep 1m
     done
 else
     # si la fin est le jour d apres -> super
-    while [[ $(date +"%H:%M") < "23:59" ]]; do
+    while [[ $(date +"%R") < "23:59" ]]; do
         sleep 1m
     done
 
-    while [[ $(date +"%H:%M") < "$stop_time" ]]; do
+    while [[ $(date +"%R") < "$stop_time" ]]; do
         sleep 1m
     done
     # kill propre du ffmpeg
