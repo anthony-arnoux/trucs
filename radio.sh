@@ -73,7 +73,5 @@ else
     while [[ $(date +"%R") < "$stop_time" ]]; do
         sleep 1m
     done
-    # kill propre du ffmpeg
-    #kill -SIGINT $pid
 fi
 kill -SIGINT $pid
