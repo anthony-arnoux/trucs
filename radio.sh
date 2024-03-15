@@ -31,6 +31,9 @@ if [[ ! -z $1 && ! -z $2 ]]; then
     nrj)
       station_uuid="db97789f-ad2e-11e8-aa67-52543be04c81"
       ;;
+    funradio)
+      station_uuid="9f756e2d-8e9b-45f5-8fc1-61573e23036b"
+      ;;
     *)
       echo "station \"$1\" non supporté"
       exit 2
