@@ -44,7 +44,7 @@ else
   exit 3
 fi
 
-out_file='${station}_$(date +"%Y-%d-%m_%H-%M")'
+out_file="${station}_$(date +"%Y-%d-%m_%H-%M")"
 
 url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
 
