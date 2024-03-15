@@ -44,7 +44,7 @@ else
   exit 3
 fi
 
-out_file="${station}_$(date +"%Y-%d-%m_%H-%M")_${RANDOM:0:3}.mp3"
+out_file='${station}_$(date +"%Y-%d-%m_%H-%M")'
 
 url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
 
@@ -52,7 +52,8 @@ url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${stati
 curr_time=$(date +"%R")
 
 # ffmpeg en arriere plan
-ffmpeg -i "$url" -c copy "$out_file" &
+ffmpeg -i "$url" -c copy "$out_file.mp3" &
+#ffmpeg -i "$url" -b:a 96k "$out_file.opus" &
 pid=$!
 
 if [[ "$curr_time" < "$stop_time" ]]; then
