@@ -19,8 +19,11 @@ fi
 if [[ ! -z $1 && ! -z $2 ]]; then
   station=$1
   if [[ $2 =~ ^[0-9]{2}:[0-9]{2}$ ]]; then # format 12:34 H:M
-    stop_time=$2
+    if [[ $3 = "demain" ]]; then
+      curr_date=$(date -d "tomorrow" "+%Y-%m-%d") #DEMAIN
+    fi
     curr_date=$(date +"%Y-%m-%d")
+    stop_time=$2
     stop_time="$curr_date $stop_time"
   else
     echo "format hh:mm"
@@ -51,7 +54,7 @@ out_file="${station}_${curr_datetime}"
 url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
 
 # ffmpeg en arriere plan
-$ffmpeg -i "${url}" -c copy "${out_file}.mp3" &
+ffmpeg -i "${url}" -c copy "${out_file}.mp3" &
 #ffmpeg -i "${url}" -b:a 96k "${out_file}.opus" &
 pid=$!
 
