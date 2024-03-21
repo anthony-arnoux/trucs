@@ -1,21 +1,15 @@
 #!/bin/bash
 TZ="Europe/Paris"
 
-# Dépendances
-if ! eval "which ffmpeg &> /dev/null"; then
-  echo "all my homiz lovz ffmpeg but it is capout je trouve pas"
-  exit 5
-elif ! eval "which curl &> /dev/null"; then
-  echo "all my true homiz lovz le cul but it is capout je trouve pas"
-  exit 5
-fi
 
-if eval "ping -qn4c1 one.one.one.one >/dev/null"; then
-  true
-else
-  echo "l'network il est capout"
-  exit 1
-fi
+# Parcours et check des dépendance
+deps=("ffmpeg" "curl")
+for dep in "${deps[@]}"; do
+  if ! command -v "$dep" &> /dev/null; then
+    echo "Dependence insatisfaite: $dep"
+    exit 2
+  fi
+done
 
 # si la station est l'heure de fin est renseignée
 if [[ ! -z $1 && ! -z $2 ]]; then
@@ -67,10 +61,10 @@ url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${stati
 
 # ffmpeg en arriere plan en copie codec
 
-ffmpeg -hide_banner -loglevel error -i "${url}" -c copy "${out_file}.mp3" &
+#ffmpeg -hide_banner -loglevel error -i "${url}" -c copy "${out_file}.mp3" &
 
 # ffmpeg en arriere plan transcodage vers opus 96kbs
-#ffmpeg -i "${url}" -b:a 96k "${out_file}.opus" &
+ffmpeg -hide_banner -loglevel error -i "${url}" -c:a libopus -b:a 96k "${out_file}.opus" &
 
 # recupération du pid du process ffmpeg
 pid=$!
