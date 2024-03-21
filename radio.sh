@@ -1,7 +1,6 @@
 #!/bin/bash
 TZ="Europe/Paris"
 
-
 # Parcours et check des dépendance
 deps=("ffmpeg" "curl")
 for dep in "${deps[@]}"; do
@@ -56,9 +55,9 @@ fi
 # template nom de sortie
 out_file="${station}_$(date +"%Y-%m-%d_%H_%M")"
 
+api=$(curl -fsSL "http://all.api.radio-browser.info/json/servers" | tr ',' '\n' | grep "name" | awk -F'"' ' {print $4} ' | head -n 1)
 # appel API avec l uuid de la station pour recuperer l url de stream
-url=$(curl -fsSL "http://de1.api.radio-browser.info/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
-
+url=$(curl -fsSL "http://${api}/json/stations/byuuid/${station_uuid}" | tr ',' '\n' | grep "url_resolved" | awk -F'"' '{print $4}')
 # ffmpeg en arriere plan en copie codec
 
 #ffmpeg -hide_banner -loglevel error -i "${url}" -c copy "${out_file}.mp3" &
