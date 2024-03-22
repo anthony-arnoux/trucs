@@ -37,7 +37,10 @@ else
 fi
 
 # CPU
-cpu_model_number="$(grep "processor" /proc/cpuinfo | wc -l ) x $(grep "model name" /proc/cpuinfo | uniq | awk -F": " '{print $2}')"
+cpu_cores_count="$(grep "processor" /proc/cpuinfo | wc -l )"
+cpu_model_number="$(grep "model name" /proc/cpuinfo | uniq | awk -F": " '{print $2}')"
+cpu_freq="$(grep "cpu MHz" /proc/cpuinfo | uniq | awk -F": " '{print $2}' | awk -F "." '{print $1}')"
+cpu="${cpu_cores_count} x ${cpu_model_number} @ ${cpu_freq} MHz"
 
 # RAM
 unit=1024 #Mo
@@ -76,7 +79,7 @@ ramusedrawpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused
 ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$ramtot ))")
 
 # Récuperer l'usage disque cumul
-read garbage disktotal diskused diskfree diskusedpercent <<< $(df -h --total | grep total)
+read garbage disktotal diskused diskfree diskusedpercent <<< $(df -x squashfs -x tmpfs -x fuse.rclone -x devtmpfs -h --total | grep total)
 diskusedpercent=$(echo $diskusedpercent | awk -F' ' {'print $1'})
 diskusedpercent=$(echo ${diskusedpercent:0:-1})
 diskfreepercent=$(( 100 - $diskusedpercent ))
@@ -104,12 +107,13 @@ echo -e "  Nom d'hôte   \e[33m:\e[0m $hostname"
 echo -e "  Date/Heure   \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31m█\e[0m"
 echo -e "  Distribution \e[33m:\e[0m $distrib ($deb_ver)"
 echo -e "  Kernel       \e[33m:\e[0m $kernel"
-echo -e "  CPU          \e[33m:\e[0m $cpu_model_number $virttech $virt_type $cpu_virt"
+echo -e "  CPU          \e[33m:\e[0m $cpu $virttech $virt_type $cpu_virt"
 echo -e "  Charge CPU   \e[33m:\e[0m $one (1min) / $five (5min) / $fifteen (15min)"
 echo -e "  Adresse IP   \e[33m:\e[0m $ip | $ipext | $ptr"
 echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
 echo -e "  Uptime       \e[33m:\e[0m $uptime"
 echo -e "  Disque       \e[33m:\e[0m $diskused/$disktotal ($diskusedpercent%) | Libre : $diskfree ($diskfreepercent%)"
+echo ""
 echo ""
 EOF
 chmod 755 /etc/update-motd.d/10-uname
