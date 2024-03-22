@@ -63,7 +63,7 @@ url=$(curl -fsSL "http://${api}/json/stations/byuuid/${station_uuid}" | tr ',' '
 #ffmpeg -hide_banner -loglevel error -i "${url}" -c copy "${out_file}.mp3" &
 
 # ffmpeg en arriere plan transcodage vers opus 96kbs
-ffmpeg -hide_banner -loglevel error -i "${url}" -c:a libopus -b:a 96k "${out_file}.opus" &
+ffmpeg -hide_banner -loglevel warning -i "${url}" -c:a libopus -b:a 96k "${out_file}.opus" &
 
 # recupération du pid du process ffmpeg
 pid=$!
