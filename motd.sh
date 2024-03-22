@@ -39,7 +39,7 @@ fi
 # CPU
 cpu_cores_count="$(grep "processor" /proc/cpuinfo | wc -l )"
 cpu_model_number="$(grep "model name" /proc/cpuinfo | uniq | awk -F": " '{print $2}')"
-cpu_freq="$(grep "cpu MHz" /proc/cpuinfo | uniq | awk -F": " '{print $2}' | awk -F "." '{print $1}')"
+cpu_freq="$(grep "cpu MHz" /proc/cpuinfo | uniq | awk -F": " '{print $2}' | awk -F "." '{print $1}' | head -n 1)"
 cpu="${cpu_cores_count} x ${cpu_model_number} @ ${cpu_freq} MHz"
 
 # RAM
