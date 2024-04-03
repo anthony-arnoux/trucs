@@ -79,7 +79,7 @@ ramusedrawpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused
 ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$ramtot ))")
 
 # Récuperer l'usage disque cumul
-read garbage disktotal diskused diskfree diskusedpercent <<< $(df -x squashfs -x tmpfs -x fuse.rclone -x devtmpfs -h --total | grep total)
+read garbage disktotal diskused diskfree diskusedpercent <<< $(df -x squashfs -x tmpfs -x fuse.rclone -x devtmpfs -x overlay -h --total | grep total)
 diskusedpercent=$(echo $diskusedpercent | awk -F' ' {'print $1'})
 diskusedpercent=$(echo ${diskusedpercent:0:-1})
 diskfreepercent=$(( 100 - $diskusedpercent ))
