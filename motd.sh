@@ -16,10 +16,6 @@ ip=$(hostname -I | cut -d " " -f1)
 deb_ver=$(cat /etc/debian_version &> /dev/null)
 datetime=$(date "+%d/%m/%Y - %H:%M:%S")
 
-if which figlet &> /dev/null; then
-  hostname_figlet=$(figlet $(hostname))
-fi
-
 # VM
 virt_type=$(systemd-detect-virt 2>/dev/null)
 if [[ -z "$virt_type" ]]; then
