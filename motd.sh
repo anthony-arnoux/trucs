@@ -86,7 +86,7 @@ read one five fifteen rest < /proc/loadavg
 # Pour récuperer l'ipv4 externe -> curl ou wget
 if [[ $internet = "1" ]]; then
   if which curl &> /dev/null; then
-    ipext=$(curl -4 -sSL 'ifconfig.me')
+    ipext=$(curl -4 -fsSL 'ifconfig.me')
   elif which wget &> /dev/null; then
     ipext=$(wget --inet4-only -qO- 'ifconfig.me')
   fi
