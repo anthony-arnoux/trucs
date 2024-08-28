@@ -9,7 +9,7 @@ fi
 
 # DEBIAN VERSION & CO
 hostname=$(hostname)
-distrib=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
+distrib=$(grep 'PRETTY_NAME' /etc/*-release | cut -d '"' -f 2)
 kernel=$(uname -r)
 uptime=$(uptime -p)
 ip=$(hostname -I | cut -d " " -f1)
