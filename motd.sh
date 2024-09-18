@@ -2,12 +2,12 @@
 cat > /etc/update-motd.d/10-uname <<'EOF'
 #!/bin/bash
 
-# Check for internet connection
+# la co ou pas
 if ping -qn4c1 1.1.1.1 >/dev/null; then
   internet="1"
 fi
 
-# System Information
+# sys info
 hostname=$(hostname)
 distrib=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
 kernel=$(uname -r)
@@ -16,23 +16,23 @@ ip=$(hostname -I | cut -d " " -f1)
 deb_ver=$(cat /etc/debian_version 2>/dev/null)
 datetime=$(date "+%d/%m/%Y - %H:%M:%S")
 
-# Virtualization Information
+# info virtu
 virt_type=$(systemd-detect-virt | tr '[:lower:]' '[:upper:]')
 virt_type=${virt_type:-"UNKNOWN"}
 [[ "$virt_type" == "NONE" ]] && virt_type="✖"
 
-# Check for virtualization support in CPU
+# support de la virtu
 cpu_virt=$(grep -E 'vmx|svm' /proc/cpuinfo)
 cpu_virt=${cpu_virt:+✔}
 cpu_virt=${cpu_virt:-"✖"}
 
-# CPU Info
+# info cpu
 cpu_cores=$(grep -c "processor" /proc/cpuinfo)
 cpu_model=$(awk -F": " '/model name/ {print $2}' /proc/cpuinfo | uniq)
 cpu_freq=$(awk -F": " '/cpu MHz/ {print $2}' /proc/cpuinfo | head -n 1 | awk -F"." '{print $1}')
 cpu_cache=$(awk -F": " '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | xargs)
 
-# Ensure CPU frequency and cache size are displayed correctly
+# formattage cpu freq et cache
 cpu_freq=${cpu_freq:-"N/A"}
 cpu_cache=${cpu_cache:-"N/A"}
 cpu_info="${cpu_cores} x ${cpu_model} @ ${cpu_freq} MHz"
@@ -75,15 +75,15 @@ ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$r
 
 
 
-# Disk Usage
+# disk
 read -r _ disktotal diskused diskfree diskusedpercent _ <<< $(df -x squashfs -x tmpfs -x devtmpfs -x cifs -x overlay -h --total | grep total)
 diskusedpercent=${diskusedpercent::-1}
 diskfreepercent=$((100 - diskusedpercent))
 
-# Load Average
+# load
 read -r load_1min load_5min load_15min _ < /proc/loadavg
 
-# External IP
+# ext ip
 if [[ $internet == "1" ]]; then
   if command -v curl >/dev/null; then
     ipext=$(curl -4 -sSL 'ifconfig.me')
@@ -98,7 +98,7 @@ if [[ $internet == "1" ]]; then
 
 fi
 
-# Display Information
+# yo
 echo ""
 echo -e "  Hostname     \e[33m:\e[0m $hostname"
 echo -e "  Date/Time    \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31m█\e[0m"
