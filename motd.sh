@@ -2,41 +2,40 @@
 cat > /etc/update-motd.d/10-uname <<'EOF'
 #!/bin/bash
 
-# y'a internet ou pas
-if $(ping -qn4c1 1.1.1.1 >/dev/null); then
+# Check for internet connection
+if ping -qn4c1 1.1.1.1 >/dev/null; then
   internet="1"
 fi
 
-# DEBIAN VERSION & CO
+# System Information
 hostname=$(hostname)
-distrib=$(grep 'PRETTY_NAME' /etc/*-release | cut -d '"' -f 2)
+distrib=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
 kernel=$(uname -r)
 uptime=$(uptime -p)
 ip=$(hostname -I | cut -d " " -f1)
-deb_ver=$(cat /etc/debian_version &> /dev/null)
+deb_ver=$(cat /etc/debian_version 2>/dev/null)
 datetime=$(date "+%d/%m/%Y - %H:%M:%S")
 
-# VM
-virt_type=$(systemd-detect-virt 2>/dev/null)
-if [[ -z "$virt_type" ]]; then
-  virt_type="" # no
-else
-  virt_type=" VM : \xE2\x9C\x94"
-fi
+# Virtualization Information
+virt_type=$(systemd-detect-virt | tr '[:lower:]' '[:upper:]')
+virt_type=${virt_type:-"UNKNOWN"}
+[[ "$virt_type" == "NONE" ]] && virt_type="✖"
 
-# VIRT
-cpu_virt=$(cat /proc/cpuinfo | grep 'vmx\|svm')
-if [[ -z "$cpu_virt" ]]; then
-  cpu_virt="" # no
-else
-  cpu_virt=" virt tech : \xE2\x9C\x94"
-fi
+# Check for virtualization support in CPU
+cpu_virt=$(grep -E 'vmx|svm' /proc/cpuinfo)
+cpu_virt=${cpu_virt:+✔}
+cpu_virt=${cpu_virt:-"✖"}
 
-# CPU
-cpu_cores_count="$(grep "processor" /proc/cpuinfo | wc -l )"
-cpu_model_number="$(grep "model name" /proc/cpuinfo | uniq | awk -F": " '{print $2}')"
-cpu_freq="$(grep "cpu MHz" /proc/cpuinfo | uniq | awk -F": " '{print $2}' | awk -F "." '{print $1}' | head -n 1)"
-cpu="${cpu_cores_count} x ${cpu_model_number} @ ${cpu_freq} MHz"
+# CPU Info
+cpu_cores=$(grep -c "processor" /proc/cpuinfo)
+cpu_model=$(awk -F": " '/model name/ {print $2}' /proc/cpuinfo | uniq)
+cpu_freq=$(awk -F": " '/cpu MHz/ {print $2}' /proc/cpuinfo | head -n 1 | awk -F"." '{print $1}')
+cpu_cache=$(awk -F": " '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | xargs)
+
+# Ensure CPU frequency and cache size are displayed correctly
+cpu_freq=${cpu_freq:-"N/A"}
+cpu_cache=${cpu_cache:-"N/A"}
+cpu_info="${cpu_cores} x ${cpu_model} @ ${cpu_freq} MHz"
 
 # RAM
 unit=1024 #Mo
@@ -74,42 +73,44 @@ fi
 ramusedrawpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramusedraw/$ramtot ))")
 ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$ramtot ))")
 
-# Récuperer l'usage disque cumul
-read garbage disktotal diskused diskfree diskusedpercent <<< $(df -x squashfs -x tmpfs -x fuse.rclone -x devtmpfs -x cifs -x overlay -h --total | grep total)
-diskusedpercent=$(echo $diskusedpercent | awk -F' ' {'print $1'})
-diskusedpercent=$(echo ${diskusedpercent:0:-1})
-diskfreepercent=$(( 100 - $diskusedpercent ))
 
-# Récupérer le loadavg
-read one five fifteen rest < /proc/loadavg
 
-# Pour récuperer l'ipv4 externe -> curl ou wget
-if [[ $internet = "1" ]]; then
-  if which curl &> /dev/null; then
-    ipext=$(curl -4 -fsSL 'ifconfig.me')
-  elif which wget &> /dev/null; then
+# Disk Usage
+read -r _ disktotal diskused diskfree diskusedpercent _ <<< $(df -x squashfs -x tmpfs -x devtmpfs -x cifs -x overlay -h --total | grep total)
+diskusedpercent=${diskusedpercent::-1}
+diskfreepercent=$((100 - diskusedpercent))
+
+# Load Average
+read -r load_1min load_5min load_15min _ < /proc/loadavg
+
+# External IP
+if [[ $internet == "1" ]]; then
+  if command -v curl >/dev/null; then
+    ipext=$(curl -4 -sSL 'ifconfig.me')
+  elif command -v wget >/dev/null; then
     ipext=$(wget --inet4-only -qO- 'ifconfig.me')
   fi
-  ptr=$(host -t PTR ${ipext} | awk {'print $NF'})
+
+  ptr=$(host -t PTR ${ipext} | awk '{print $NF}')
+  if [[ -z "$ptr" || "$ptr" == *"(NXDOMAIN)"* ]]; then
+    ptr="✖"
+  fi
+
 fi
 
-if [[ ! -z $ipext ]]; then
-  ipext="${ipext} ✔ "
-fi
-
-# Affichage
+# Display Information
 echo ""
-echo -e "  Nom d'hôte   \e[33m:\e[0m $hostname"
-echo -e "  Date/Heure   \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31m█\e[0m"
+echo -e "  Hostname     \e[33m:\e[0m $hostname"
+echo -e "  Date/Time    \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31m█\e[0m"
 echo -e "  Distribution \e[33m:\e[0m $distrib ($deb_ver)"
 echo -e "  Kernel       \e[33m:\e[0m $kernel"
-echo -e "  CPU          \e[33m:\e[0m $cpu $virttech $virt_type $cpu_virt"
-echo -e "  Charge CPU   \e[33m:\e[0m $one (1min) / $five (5min) / $fifteen (15min)"
-echo -e "  Adresse IP   \e[33m:\e[0m $ip | $ipext | $ptr"
+echo -e "  CPU          \e[33m:\e[0m $cpu_info (cache: $cpu_cache)"
+echo -e "  Charge CP    \e[33m:\e[0m $load_1min (1min) / $load_5min (5min) / $load_15min (15min)"
+echo -e "  Virtualizati \e[33m:\e[0m VM: $virt_type | CPU Virtualization: $cpu_virt"
+echo -e "  IP           \e[33m:\e[0m Int: $ip | Ext: ${ipext:-"N/A"} | PTR: ${ptr:-"N/A"}"
 echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
 echo -e "  Uptime       \e[33m:\e[0m $uptime"
-echo -e "  Disque       \e[33m:\e[0m $diskused/$disktotal ($diskusedpercent%) | Libre : $diskfree ($diskfreepercent%)"
-echo ""
+echo -e "  Disk         \e[33m:\e[0m $diskused / $disktotal ($diskusedpercent%) | Free: $diskfree ($diskfreepercent%)"
 echo ""
 EOF
 chmod 755 /etc/update-motd.d/10-uname
