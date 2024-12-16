@@ -74,7 +74,6 @@ ramusedrawpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused
 ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$ramtot ))")
 
 
-
 # disk
 read -r _ disktotal diskused diskfree diskusedpercent _ <<< $(df -x squashfs -x tmpfs -x devtmpfs -x cifs -x overlay -h --total | grep total)
 diskusedpercent=${diskusedpercent::-1}
@@ -83,6 +82,13 @@ diskfreepercent=$((100 - diskusedpercent))
 # load
 read -r load_1min load_5min load_15min _ < /proc/loadavg
 
+# si y'a bc -> calcul de la vrai load
+if command -v bc &> /dev/null; then
+
+    load_p_1min=$(echo "scale=1; 100 * $load_1min / $cpu_cores" | bc)
+    load_p_5min=$(echo "scale=1; 100 * $load_5min / $cpu_cores" | bc)
+    load_p_15min=$(echo "scale=1; 100 * $load_15min / $cpu_cores" | bc)
+fi
 # ext ip
 if [[ $internet == "1" ]]; then
   if command -v curl >/dev/null; then
@@ -105,7 +111,7 @@ echo -e "  Date/Time    \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31
 echo -e "  Distribution \e[33m:\e[0m $distrib ($deb_ver)"
 echo -e "  Kernel       \e[33m:\e[0m $kernel"
 echo -e "  CPU          \e[33m:\e[0m $cpu_info (cache: $cpu_cache)"
-echo -e "  Charge CP    \e[33m:\e[0m $load_1min (1min) / $load_5min (5min) / $load_15min (15min)"
+echo -e "  Charge CP    \e[33m:\e[0m $load_1min $load_p_1min% (1min) / $load_5min $load_p_5min% (5min) / $load_15min $load_p_15min% (15min)"
 echo -e "  Virtualizati \e[33m:\e[0m VM: $virt_type | CPU Virtualization: $cpu_virt"
 echo -e "  IP           \e[33m:\e[0m Int: $ip | Ext: ${ipext:-"N/A"} | PTR: ${ptr:-"N/A"}"
 echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
