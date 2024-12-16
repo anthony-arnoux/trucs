@@ -111,7 +111,7 @@ echo -e "  Date/Time    \e[33m:\e[0m $datetime \e[34m█\e[0m\e[37m█\e[0m\e[31
 echo -e "  Distribution \e[33m:\e[0m $distrib ($deb_ver)"
 echo -e "  Kernel       \e[33m:\e[0m $kernel"
 echo -e "  CPU          \e[33m:\e[0m $cpu_info (cache: $cpu_cache)"
-echo -e "  Charge CP    \e[33m:\e[0m $load_1min $load_p_1min% (1min) / $load_5min $load_p_5min% (5min) / $load_15min $load_p_15min% (15min)"
+echo -e "  Charge CPU    \e[33m:\e[0m $load_1min $load_p_1min% (1min) / $load_5min $load_p_5min% (5min) / $load_15min $load_p_15min% (15min)"
 echo -e "  Virtualizati \e[33m:\e[0m VM: $virt_type | CPU Virtualization: $cpu_virt"
 echo -e "  IP           \e[33m:\e[0m Int: $ip | Ext: ${ipext:-"N/A"} | PTR: ${ptr:-"N/A"}"
 echo -e "  RAM          \e[33m:\e[0m $ramusedraw$unitname/$ramtot$unitname ($ramusedrawpercent%) | Total (Cache/Buffers/Bata..) : $ramused$unitname/$(($memtotal/$unit))$unitname ($ramusedpercent%) | Swap ($swappercent%)"
