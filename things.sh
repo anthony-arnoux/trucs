@@ -45,12 +45,17 @@ fi
 selected_command="${commands[$((choice-1))]}"
 for server in "${servers[@]}"; do
     echo ""
-    echo "Executing on $server..."
-    echo "/- - - - -"
-    echo "|"
-    ssh "$server" "$selected_command"
-    echo "Finished executing on $server"
-    echo "|"
-    echo "\- - - - -"
+#    echo "Checking $server..."
+    if ping -c 1 -W 1 "$server" > /dev/null 2>&1; then
+#        echo "Host $server is online. Executing command..."
+        echo "/- - - - -"
+        echo "|"
+        ssh "$server" "$selected_command"
+        echo "Finished executing on $server"
+        echo "|"
+        echo "\- - - - -"
+    else
+        echo "Host $server is unreachable. Skipping."
+    fi
     echo ""
 done
