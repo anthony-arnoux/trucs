@@ -75,7 +75,7 @@ ramusedpercent=$(sed -e "s/..\$/&/;t" -e "s/..\$/.0&/" <<<"$(( 100 * $ramused/$r
 
 
 # disk
-read -r _ disktotal diskused diskfree diskusedpercent _ <<< $(df -x squashfs -x tmpfs -x devtmpfs -x cifs -x overlay -x nfs -h --total | grep total)
+read -r _ disktotal diskused diskfree diskusedpercent _ <<< $(df -x squashfs -x tmpfs -x devtmpfs -x cifs -x overlay -x nfs -x fuse.rclone -h --total | grep total)
 diskusedpercent=${diskusedpercent::-1}
 diskfreepercent=$((100 - diskusedpercent))
 
